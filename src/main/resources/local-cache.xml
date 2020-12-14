@@ -1,0 +1,5 @@
+<infinispan>
+  <cache-container statistics="true">
+    <local-cache name="customers" statistics="true"/>
+  </cache-container>
+</infinispan>

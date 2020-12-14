@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.redhat</groupId>
+	<artifactId>customer-service-cache</artifactId>
+	<version>0.0.2-SNAPSHOT</version>
+
+	<name>customer-service-cache</name>
+	<description>MSA Demo</description>
+	<packaging>jar</packaging>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.3.5.RELEASE</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>11</java.version>
+		<springdoc.version>1.5.1</springdoc.version>
+		<springcloud.kubernetes.version>1.1.7.RELEASE</springcloud.kubernetes.version>
+		<springboot.data.redis.version>2.3.5.RELEASE</springboot.data.redis.version>
+		<!--infinispan.version>11.0.1.Final</infinispan.version-->
+		<infinispan.version>11.0.6.Final</infinispan.version>
+		<micrometer.version>1.6.1</micrometer.version>
+		<microprofile.config>2.0</microprofile.config>
+		<lombok.version>1.18.10</lombok.version>
+	</properties>
+
+	<dependencies>
+
+		<!-- Spring Cache Remote Infinispan -->
+		<!-- <dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-spring-boot-starter-remote</artifactId>
+			<version>${infinispan.version}</version>
+		</dependency> -->
+
+		<!-- Spring Cache Embedded Infinispan -->
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-spring-boot-starter-embedded</artifactId>
+			<version>${infinispan.version}</version>
+		</dependency>
+
+		<!-- Lock Infinispan version, instead of the one included by springboot itself -->
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-spring5-embedded</artifactId>
+			<version>${infinispan.version}</version>
+		</dependency>
+
+		<!-- SpringBoot -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Spring Data Redis>
+		<dependency>  
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+			<version>${springboot.data.redis.version}</version>
+		</dependency-->
+
+		<!-- OpenAPI -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>${springdoc.version}</version>
+		</dependency>
+
+		<!-- Spring Cloud Kubernetes -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-kubernetes</artifactId>
+			<version>${springcloud.kubernetes.version}</version>
+		</dependency>
+
+		<!-- Monitoring through Actuator -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+			<version>${micrometer.version}</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.0</version>
+				<configuration>
+					<release>${java.version}</release>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<!--jvmArguments>-Djavax.net.ssl.trustStore=/home/rgordill/git/customer-service-jdg/customer-service-jdg/redis.p12 -Djavax.net.ssl.trustStorePassword=redis -Djavax.net.ssl.trustStoreType=PKCS12</jvmArguments-->
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.jkube</groupId>
+				<artifactId>kubernetes-maven-plugin</artifactId>
+				<version>1.0.2</version>
+				<configuration>
+					<images>
+						<image>
+							<name>ramon.gordillo/%a:%l</name>
+							<registry>quay.io</registry>
+							<build>
+								<from>quay.io/jkube/jkube-java-binary-s2i:0.0.8</from>
+								<env>
+									<JAVA_OPTIONS>--spring.profiles.active=dev</JAVA_OPTIONS>
+									<AAA>sat</AAA>
+								</env>
+								<assembly>
+									<targetDir>/deployments</targetDir>
+								</assembly>
+							</build>
+						</image>
+					</images>
+					<resources>
+						<configMap>
+							<name>customer-service-cache-config</name>
+							<entries>
+								<entry>
+									<file>src/main/resources/application-kubernetes.properties</file>
+								</entry>
+								<entry>
+									<file>src/main/resources/local-cache.xml</file>
+								</entry>
+							</entries>
+						</configMap>
+					</resources>
+					<!--generator>
+                        <includes>
+                            <include>spring-boot</include>
+                        </includes>
+                        <config>
+                            <spring-boot>
+                                <color>always</color>
+                            </spring-boot>
+                        </config>
+                    </generator>
+					<enricher>
+						<excludes>
+							<exclude>jkube-expose</exclude>
+						</excludes>
+						<config>
+							<jkube-service>
+								<type>NodePort</type>
+							</jkube-service>
+						</config>
+					</enricher-->
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+
+</project>

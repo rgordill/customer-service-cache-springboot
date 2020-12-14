@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 public class CustomerController {
 	
 	@Autowired
-	private CustomerRepositoryCache repository;
+	private CustomerRepositorySpringCache repository;
 	
     @RequestMapping(method=RequestMethod.GET,value="/customer/{id}")
     @Operation(

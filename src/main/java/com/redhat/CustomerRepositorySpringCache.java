@@ -12,8 +12,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @Qualifier("SpringCache") 
-@CacheConfig(cacheNames="default")
-public class CustomerRepositorySpringCache implements CustomerRepositoryCache {
+@CacheConfig(cacheNames="customers")
+public class CustomerRepositorySpringCache {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Cacheable(key="#id")

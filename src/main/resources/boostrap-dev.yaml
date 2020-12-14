@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: customer-service-cache
+  cloud:
+    kubernetes:
+      config:
+        name: customer-service-cache-config
