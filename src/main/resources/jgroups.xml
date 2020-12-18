@@ -1,0 +1,23 @@
+<jgroups>
+    <stack name="image-tcp" extends="tcp">
+        <TCP bind_addr="${jgroups.bind.address,jgroups.tcp.address:172.17.0.12}"
+             bind_port="${jgroups.bind.port,jgroups.tcp.port:7800}"
+             enable_diagnostics="false"/>
+
+        <dns.DNS_PING dns_address="" dns_query="infinispan-minimal-ping.infinispan.svc.cluster.local"
+                      dns_record_type="A"
+                      stack.combine="REPLACE" stack.position="MPING"/>
+    </stack>
+
+    <stack name="image-udp" extends="udp">
+        <UDP enable_diagnostics="false"
+             port_range="0"
+        />
+
+        <dns.DNS_PING dns_address="" dns_query="infinispan-minimal-ping.infinispan.svc.cluster.local"
+                      dns_record_type="A"
+                      stack.combine="REPLACE" stack.position="PING"/>
+        <FD_SOCK client_bind_port="57600" start_port="57600"/>
+    </stack>
+
+</jgroups>

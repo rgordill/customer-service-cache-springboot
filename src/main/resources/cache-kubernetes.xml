@@ -1,0 +1,6 @@
+<infinispan>
+  <cache-container statistics="true">
+    <transport stack="kubernetes" />
+    <replicated-cache name="customers" statistics="true"/>
+  </cache-container>
+</infinispan>

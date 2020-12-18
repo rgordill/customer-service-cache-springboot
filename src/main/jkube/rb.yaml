@@ -1,0 +1,8 @@
+subjects:
+- kind: ServiceAccount
+  name: ${project.artifactId}
+  apiGroup: ""
+roleRef:
+  kind: Role
+  name: ${project.artifactId}
+  apiGroup: ""
