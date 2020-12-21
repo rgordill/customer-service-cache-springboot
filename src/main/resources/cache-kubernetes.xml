@@ -1,6 +1,11 @@
 <infinispan>
   <cache-container statistics="true">
     <transport stack="kubernetes" />
-    <replicated-cache name="customers" statistics="true"/>
+    <serialization marshaller="org.infinispan.commons.marshall.JavaSerializationMarshaller">
+      <allow-list>
+        <regex>.*</regex>
+      </allow-list>
+    </serialization>
+    <replicated-cache name="customers" statistics="true" />
   </cache-container>
 </infinispan>

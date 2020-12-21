@@ -1,4 +1,4 @@
-package com.redhat;
+package org.sample;
 
 import java.util.UUID;
 

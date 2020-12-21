@@ -1,4 +1,4 @@
-package com.redhat;
+package org.sample;
 
 import java.io.Serializable;
 
@@ -11,8 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter @NoArgsConstructor 
 @SuppressWarnings("serial")
+@Getter @Setter @NoArgsConstructor 
 @Schema(title = "Customer")
 @JsonPropertyOrder({"id","first-name","last-name","email"})
 public class Customer implements Serializable {
