@@ -2,3 +2,5 @@
 **/.project
 **/.settings/**
 **/target/**
+**/.idea
+customer-service-cache.iml
