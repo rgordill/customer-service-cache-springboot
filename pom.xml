@@ -10,54 +10,106 @@
 	<description>Cache Demo</description>
 	<packaging>jar</packaging>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.3.5.RELEASE</version>
-		<relativePath /> <!-- lookup parent from repository -->
-	</parent>
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>11</java.version>
+		<springboot.version>2.4.2</springboot.version>
 		<springdoc.version>1.5.1</springdoc.version>
-		<springcloud.kubernetes.version>1.1.7.RELEASE</springcloud.kubernetes.version>
-		<springboot.data.redis.version>2.3.5.RELEASE</springboot.data.redis.version>
-		<!--infinispan.version>11.0.1.Final</infinispan.version-->
-		<infinispan.spring.version>11.0.6.Final</infinispan.spring.version>
-		<infinispan.version>11.0.6.Final</infinispan.version>
+		<infinispan.spring.version>12.0.0.Final</infinispan.spring.version>
+		<infinispan.version>12.0.0.Final</infinispan.version>
 		<micrometer.version>1.6.1</micrometer.version>
-		<microprofile.config>2.0</microprofile.config>
 		<lombok.version>1.18.10</lombok.version>
-
-		<ping.service.name>ping</ping.service.name>
-		<ingress.domain>minikube.cloud</ingress.domain>
 	</properties>
 
+	<profiles>
+		<profile>
+			<id>embedded</id>
+			<dependencies>
+				<!-- Spring Cache Embedded Infinispan -->
+				<dependency>
+					<groupId>org.infinispan</groupId>
+					<artifactId>infinispan-spring-boot-starter-embedded</artifactId>
+					<version>${infinispan.spring.version}</version>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<configuration>
+							<profiles>
+								<profile>embedded</profile>
+							</profiles>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>remote</id>
+			<dependencies>
+				<!-- Spring Cache Remote Infinispan -->
+				<dependency>
+					<groupId>org.infinispan</groupId>
+					<artifactId>infinispan-spring-boot-starter-remote</artifactId>
+					<version>${infinispan.version}</version>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<configuration>
+							<profiles>
+								<profile>remote</profile>
+							</profiles>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>kubernetes</id>
+			<properties>
+				<springcloud.kubernetes.version>2.0.0</springcloud.kubernetes.version>
+				<ping.service.name>ping</ping.service.name>
+				<ingress.domain>minikube.cloud</ingress.domain>
+			</properties>
+			<dependencies>
+				<!-- Spring Cloud Kubernetes -->
+				<dependency>
+					<groupId>org.springframework.cloud</groupId>
+					<artifactId>spring-cloud-starter-kubernetes-fabric8-config</artifactId>
+					<version>${springcloud.kubernetes.version}</version>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Lock Infinispan version, instead of the one included by springboot itself -->
+			<dependency>
+				<groupId>org.infinispan</groupId>
+				<artifactId>infinispan-bom</artifactId>
+				<version>${infinispan.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${springboot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
-
-		<!-- Spring Cache Remote Infinispan -->
-		<!-- <dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-spring-boot-starter-remote</artifactId>
-			<version>${infinispan.version}</version>
-		</dependency> -->
-
-		<!-- Lock Infinispan version, instead of the one included by springboot itself -->
-		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-spring5-embedded</artifactId>
-			<version>${infinispan.version}</version>
-		</dependency>
-
-		<!-- Spring Cache Embedded Infinispan -->
-		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-spring-boot-starter-embedded</artifactId>
-			<version>${infinispan.spring.version}</version>
-		</dependency>
-
-		<!-- SpringBoot -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -77,13 +129,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Spring Data Redis>
-		<dependency>  
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-			<version>${springboot.data.redis.version}</version>
-		</dependency-->
-
 		<!-- OpenAPI -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
@@ -102,14 +147,6 @@
 			<artifactId>micrometer-registry-prometheus</artifactId>
 			<version>${micrometer.version}</version>
 		</dependency>
-
-		<!-- Spring Cloud Kubernetes -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-kubernetes</artifactId>
-			<version>${springcloud.kubernetes.version}</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>
@@ -129,8 +166,11 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<profiles>
-						<profile>local</profile>
+						<profile>embedded</profile>
 					</profiles>
+					<!--arguments>
+						<argument>- -spring.cloud.kubernetes.enabled=false</argument>
+					</arguments-->
 				</configuration>
 			</plugin>
 

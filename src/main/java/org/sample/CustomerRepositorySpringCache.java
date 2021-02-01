@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 @CacheConfig(cacheNames="customers")
 public class CustomerRepositorySpringCache {
 
-    @Cacheable(key="#id")
+    @Cacheable(key="#id", unless="#result == null")
     public Customer findById(String id){
     	return null; 	
     }
