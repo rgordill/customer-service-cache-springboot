@@ -6,6 +6,7 @@
         <regex>.*</regex>
       </allow-list>
     </serialization>
+    <replicated-cache name="___protobuf_metadata" statistics="true" />
     <replicated-cache name="customers" statistics="true" />
   </cache-container>
 </infinispan>

@@ -5,6 +5,7 @@
         <regex>.*</regex>
       </allow-list>
     </serialization>
+    <local-cache name="___protobuf_metadata" statistics="true" />
     <local-cache name="customers" statistics="true" />
   </cache-container>
 </infinispan>

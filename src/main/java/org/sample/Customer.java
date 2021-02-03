@@ -1,20 +1,21 @@
 package org.sample;
 
-import java.io.Serializable;
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+
 import org.infinispan.protostream.annotations.ProtoFactory;
 import org.infinispan.protostream.annotations.ProtoField;
 
-@SuppressWarnings("serial")
 @Setter @NoArgsConstructor
+@EqualsAndHashCode
+@ToString
 @Schema(title = "Customer")
 @JsonPropertyOrder({"id","first-name","last-name","email"})
 public class Customer {
@@ -63,25 +64,4 @@ public class Customer {
 		return email;
 	}
 
-	@Override
-	public String toString() {
-		return "Customer{" + "id='" + id + '\'' + ", firstName='" + firstName + '\'' + ", lastName='" + lastName + '\''
-				+ ", email='" + email + '\'' + '}';
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		Customer customer = (Customer) o;
-		return Objects.equals(id, customer.id) && Objects.equals(firstName, customer.firstName) && Objects
-				.equals(lastName, customer.lastName) && Objects.equals(email, customer.email);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(id, firstName, lastName, email);
-	}
 }

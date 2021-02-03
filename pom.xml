@@ -22,6 +22,7 @@
 	</properties>
 
 	<profiles>
+		<!-- Infinispan Embedded -->
 		<profile>
 			<id>embedded</id>
 			<dependencies>
@@ -32,20 +33,11 @@
 					<version>${infinispan.spring.version}</version>
 				</dependency>
 			</dependencies>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.springframework.boot</groupId>
-						<artifactId>spring-boot-maven-plugin</artifactId>
-						<configuration>
-							<profiles>
-								<profile>embedded</profile>
-							</profiles>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
+			<properties>
+				<infinispan.mode>embedded</infinispan.mode>
+			</properties>
 		</profile>
+		<!-- Infinispan Remote -->
 		<profile>
 			<id>remote</id>
 			<dependencies>
@@ -56,26 +48,26 @@
 					<version>${infinispan.version}</version>
 				</dependency>
 			</dependencies>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.springframework.boot</groupId>
-						<artifactId>spring-boot-maven-plugin</artifactId>
-						<configuration>
-							<profiles>
-								<profile>remote</profile>
-							</profiles>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
+			<properties>
+				<infinispan.mode>remote</infinispan.mode>
+			</properties>
 		</profile>
+
+		<!-- Local deployment -->
+		<profile>
+			<id>host</id>
+			<properties>
+				<deployment.mode>host</deployment.mode>
+			</properties>
+		</profile>
+
+		<!-- Deployment on k8s -->
 		<profile>
 			<id>kubernetes</id>
 			<properties>
 				<springcloud.kubernetes.version>2.0.0</springcloud.kubernetes.version>
-				<ping.service.name>ping</ping.service.name>
 				<ingress.domain>minikube.cloud</ingress.domain>
+				<deployment.mode>kubernetes</deployment.mode>
 			</properties>
 			<dependencies>
 				<!-- Spring Cloud Kubernetes -->
@@ -85,7 +77,93 @@
 					<version>${springcloud.kubernetes.version}</version>
 				</dependency>
 			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.jkube</groupId>
+						<artifactId>kubernetes-maven-plugin</artifactId>
+						<version>1.0.2</version>
+						<configuration>
+							<images>
+								<image>
+									<name>quay.io/rgordill/%a:%l</name>
+									<!--registry>quay.io</registry-->
+									<build>
+										<from>quay.io/jkube/jkube-java-binary-s2i:0.0.9</from>
+										<assembly>
+											<targetDir>/deployments</targetDir>
+										</assembly>
+									</build>
+								</image>
+							</images>
+							<resources>
+								<replicas>2</replicas>
+								<serviceAccount>${project.artifactId}</serviceAccount>
+								<volumes>
+									<volume>
+										<name>config-volume</name>
+										<type>configMap</type>
+										<configMapName>${project.artifactId}-config</configMapName>
+										<mounts>
+											<mount>/opt/jboss/etc</mount>
+										</mounts>
+									</volume>
+								</volumes>
+								<services>
+									<service>
+										<name>${project.artifactId}</name>
+										<ports>
+											<port>
+												<name>http</name>
+												<protocol>TCP</protocol>
+												<port>8080</port>
+												<targetPort>8080</targetPort>
+											</port>
+										</ports>
+									</service>
+									<service>
+										<name>${project.artifactId}-ping</name>
+										<headless>true</headless>
+										<ports>
+											<port>
+												<name>${project.artifactId}-ping</name>
+												<protocol>TCP</protocol>
+												<port>7800</port>
+												<targetPort>7800</targetPort>
+											</port>
+										</ports>
+									</service>
+								</services>
+								<configMap>
+									<name>${project.artifactId}-config</name>
+									<entries>
+										<entry>
+											<file>src/main/resources/application.properties</file>
+										</entry>
+										<entry>
+											<file>src/main/resources/application-${deployment.mode}.properties</file>
+										</entry>
+										<entry>
+											<file>src/main/resources/application-${infinispan.mode}.properties</file>
+										</entry>
+										<entry>
+											<file>src/main/resources/cache-${deployment.mode}.xml</file>
+										</entry>
+									</entries>
+								</configMap>
+								<env>
+									<!-- disable jolokia -->
+									<AB_JOLOKIA_OFF>true</AB_JOLOKIA_OFF>
+									<JAVA_OPTIONS>-Djgroups.dns.query=${project.artifactId}-ping</JAVA_OPTIONS>
+									<JAVA_ARGS>--spring.profiles.active=${deployment.mode},${infinispan.mode} --spring.application.name=customer-service-cache --spring.cloud.kubernetes.config.name=customer-service-cache-config --spring.cloud.kuberentes.config.paths=/opt/jboss/etc --spring.cloud.kubernetes.config.enableApi=false</JAVA_ARGS>
+								</env>
+							</resources>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
+
 	</profiles>
 
 	<dependencyManagement>
@@ -114,15 +192,16 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+
+		<!-- ProtoStream implementation and relatives -->
 		<dependency>
-			<groupId>org.infinispan.protostream</groupId>
-			<artifactId>protostream-processor</artifactId>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-remote-query-client</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
+			<groupId>org.infinispan.protostream</groupId>
+			<artifactId>protostream-processor</artifactId>
 		</dependency>
 
 		<!-- Lombok -->
@@ -166,96 +245,27 @@
 			</plugin>
 
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.0</version>
 				<configuration>
-					<profiles>
-						<profile>embedded</profile>
-					</profiles>
-					<!--arguments>
-						<argument>- -spring.cloud.kubernetes.enabled=false</argument>
-					</arguments-->
+					<archive>
+						<addMavenDescriptor>false</addMavenDescriptor>
+					</archive>
 				</configuration>
 			</plugin>
 
 			<plugin>
-				<groupId>org.eclipse.jkube</groupId>
-				<artifactId>kubernetes-maven-plugin</artifactId>
-				<version>1.0.2</version>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<images>
-						<image>
-							<name>ramongordillo/%a:%l</name>
-							<!--registry>quay.io</registry-->
-							<build>
-								<from>quay.io/jkube/jkube-java-binary-s2i:0.0.8</from>
-								<assembly>
-									<targetDir>/deployments</targetDir>
-								</assembly>
-							</build>
-						</image>
-					</images>
-					<resources>
-						<replicas>2</replicas>
-						<serviceAccount>${project.artifactId}</serviceAccount>
-						<volumes>
-							<volume>
-								<name>config</name>
-								<type>configMap</type>
-								<configMapName>${project.artifactId}-config</configMapName>
-								<mounts>
-									<mount>/opt/jboss/etc</mount>
-								</mounts>
-							</volume>
-						</volumes>
-						<services>
-							<service>
-								<name>${project.artifactId}</name>
-								<ports>
-									<port>
-										<name>http</name>
-										<protocol>TCP</protocol>
-										<port>8080</port>
-										<targetPort>8080</targetPort>
-									</port>
-								</ports>
-							</service>
-							<service>
-								<name>${ping.service.name}</name>
-								<headless>true</headless>
-								<ports>
-									<port>
-										<name>${ping.service.name}</name>
-										<protocol>TCP</protocol>
-										<port>7800</port>
-										<targetPort>7800</targetPort>
-									</port>
-								</ports>
-							</service>
-						</services>
-						<configMap>
-							<name>${project.artifactId}-config</name>
-							<entries>
-								<entry>
-									<file>src/main/resources/application-kubernetes.properties</file>
-								</entry>
-								<entry>
-									<file>src/main/resources/cache-kubernetes.xml</file>
-								</entry>
-							</entries>
-						</configMap>
-						<env>
-							<!-- disable jolokia -->
-							<AB_JOLOKIA_OFF>true</AB_JOLOKIA_OFF>
-							<JAVA_OPTIONS>-Djgroups.dns.query=${ping.service.name}</JAVA_OPTIONS>
-							<JAVA_ARGS>--spring.profiles.active=kubernetes --spring.application.name=customer-service-cache --spring.cloud.kubernetes.config.name=customer-service-cache-config --spring.cloud.kuberentes.config.paths=/opt/jboss/etc --spring.cloud.kubernetes.config.enableApi=false
-					</JAVA_ARGS>
-						</env>
-					</resources>
+					<profiles>
+						<profile>${infinispan.mode}</profile>
+						<profile>${deployment.mode}</profile>
+					</profiles>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-
 
 </project>
