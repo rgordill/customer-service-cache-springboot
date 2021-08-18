@@ -13,7 +13,7 @@ For testing, you can do the following:
 Just execute 
 
 ```bash
-mvn clean package spring-boot:repackage spring-boot:run -Pembedded,host
+mvn clean compile jar:jar spring-boot:repackage spring-boot:run -Pembedded,host
 ```
 
 Connect to http://localhost:8080/swagger-ui.html and test some methods
@@ -28,11 +28,11 @@ Create an user with the following credentials:
 user: developer
 pass: 
 
-mvn clean package spring-boot:repackage spring-boot:run -Premote,host
+mvn clean compile jar:jar spring-boot:repackage spring-boot:run -Premote,host
 
 ### Remote in kubernetes
 
-mvn clean package spring-boot:repackage k8s:build k8s:push k8s:resource k8s:deploy -Premote,kubernetes
+mvn clean compile jar:jar spring-boot:repackage k8s:build k8s:push k8s:resource k8s:deploy -Premote,kubernetes
 
 mvn k8s:undeploy -Pkubernetes,embedded
 

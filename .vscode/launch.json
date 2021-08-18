@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Attach",
+            "request": "attach",
+            "hostName": "localhost",
+            "port": 5005
+        },
+        {
+            "type": "java",
             "name": "Spring Boot - CustomerServiceCacheApplication",
             "request": "launch",
             "cwd": "${workspaceFolder}",

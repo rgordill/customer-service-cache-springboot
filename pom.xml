@@ -4,7 +4,7 @@
 
 	<groupId>com.redhat</groupId>
 	<artifactId>customer-service-cache</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.3-SNAPSHOT</version>
 
 	<name>customer-service-cache</name>
 	<description>Cache Demo</description>
@@ -13,13 +13,25 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>11</java.version>
-		<springboot.version>2.4.2</springboot.version>
-		<springdoc.version>1.5.1</springdoc.version>
-		<infinispan.spring.version>12.0.0.Final</infinispan.spring.version>
-		<infinispan.version>12.0.0.Final</infinispan.version>
-		<micrometer.version>1.6.1</micrometer.version>
+		<springboot.version>2.5.3</springboot.version>
+		<springdoc.version>1.5.10</springdoc.version>
+		<infinispan.version>12.1.7.Final-redhat-00001</infinispan.version>
+		<micrometer.version>1.7.3</micrometer.version>
 		<lombok.version>1.18.10</lombok.version>
 	</properties>
+
+	<repositories>
+		<repository>
+		  <id>redhat-ge</id>
+		  <name>Red Hat GA Repo</name>
+		  <url>https://maven.repository.redhat.com/ga/</url>
+		</repository>
+		<repository>
+		  <id>redhat-ea</id>
+		  <name>Red Hat EA Repo</name>
+		  <url>https://maven.repository.redhat.com/earlyaccess/all/</url>
+		</repository>
+	  </repositories>
 
 	<profiles>
 		<!-- Infinispan Embedded -->
@@ -30,7 +42,7 @@
 				<dependency>
 					<groupId>org.infinispan</groupId>
 					<artifactId>infinispan-spring-boot-starter-embedded</artifactId>
-					<version>${infinispan.spring.version}</version>
+					<version>${infinispan.version}</version>
 				</dependency>
 			</dependencies>
 			<properties>
@@ -258,6 +270,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${springboot.version}</version>
 				<configuration>
 					<profiles>
 						<profile>${infinispan.mode}</profile>
