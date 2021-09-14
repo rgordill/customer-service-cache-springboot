@@ -3,4 +3,5 @@
 **/.settings/**
 **/target/**
 **/.idea
+**/.vscode
 customer-service-cache.iml

@@ -1,11 +1,27 @@
 <infinispan>
   <cache-container statistics="true">
+    <jmx enabled="true" />
     <serialization marshaller="org.infinispan.commons.marshall.JavaSerializationMarshaller">
       <allow-list>
         <regex>.*</regex>
       </allow-list>
     </serialization>
-    <local-cache name="___protobuf_metadata" statistics="true" />
-    <local-cache name="customers" statistics="true" />
+    <local-cache name="___protobuf_metadata" statistics="false" />
+    <local-cache name="customers" statistics="true">
+      <!--persistence-->
+        <!--rocksdb-store xmlns="urn:infinispan:config:store:rocksdb:12.1" path="rocksdb/data">
+          <expiration path="rocksdb/expired" />
+        </rocksdb-store-->
+        <!--string-keyed-jdbc-store xmlns="urn:infinispan:config:store:jdbc:12.1">
+          <connection-pool connection-url="jdbc:postgresql://localhost:5432/infinispan" username="sa" password="password" driver="org.postgresql.Driver" />
+          <string-keyed-table drop-on-exit="false" prefix="ISPN_STRING_TABLE">
+            <id-column name="ID_COLUMN" type="VARCHAR(255)" />
+            <data-column name="DATA_COLUMN" type="BYTEA" />
+            <timestamp-column name="TIMESTAMP_COLUMN" type="BIGINT" />
+            <segment-column name="SEGMENT_COLUMN" type="INT" />
+          </string-keyed-table>
+        </string-keyed-jdbc-store-->
+      <!--/persistence-->
+    </local-cache>
   </cache-container>
 </infinispan>

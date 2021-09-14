@@ -1,5 +1,6 @@
 package org.sample;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -48,13 +49,15 @@ public class CustomerController {
 	public Customer getCustomer(
 		@PathVariable(value="id") String id
     		) {
-    	Customer c = repository.findById(id);
+
+    
+        Optional<Customer> c = repository.findById(id);
     	
-        if (c == null) {
+        if (!c.isPresent()) {
             throw new CustomerNotFoundException();
         }
 
-        return c;
+        return c.get();
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/customer")
@@ -64,26 +67,21 @@ public class CustomerController {
 
         c.setId(UUID.randomUUID().toString());
 
-        return repository.insert(c.getId(), c);
+        return repository.save(c);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/customer/{id}")
     @Operation(summary = "Delete a Customer", description = "Delete a Customer by id")
     public void deleteCustomer(@PathVariable(value = "id") String id) {
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/customer/{id}")
     @Operation(summary = "Update a Customer", description = "Update a Customer by id")
     public Customer updateCustomer(@PathVariable(value = "id") String id,
             @Parameter(description = "Customer object", required = true, name = "Customer") @RequestBody Customer c) {
-        Customer c_cache = repository.findById(id);
-
-        if (c_cache == null) {
-            throw new CustomerNotFoundException();
-        }
-
-        Customer c_update = repository.insert(id, c);
+ 
+        Customer c_update = repository.save(c);
 
         return c_update;
     }

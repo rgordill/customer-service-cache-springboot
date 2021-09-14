@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.redhat</groupId>
-	<artifactId>customer-service-cache</artifactId>
+	<artifactId>customer-service-cache-springboot</artifactId>
 	<version>0.0.3-SNAPSHOT</version>
 
 	<name>customer-service-cache</name>
@@ -14,6 +14,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>11</java.version>
 		<springboot.version>2.5.3</springboot.version>
+		<springdata.version>2021.0.4</springdata.version>
 		<springdoc.version>1.5.10</springdoc.version>
 		<infinispan.version>12.1.7.Final-redhat-00001</infinispan.version>
 		<micrometer.version>1.7.3</micrometer.version>
@@ -22,16 +23,16 @@
 
 	<repositories>
 		<repository>
-		  <id>redhat-ge</id>
-		  <name>Red Hat GA Repo</name>
-		  <url>https://maven.repository.redhat.com/ga/</url>
+			<id>redhat-ge</id>
+			<name>Red Hat GA Repo</name>
+			<url>https://maven.repository.redhat.com/ga/</url>
 		</repository>
 		<repository>
-		  <id>redhat-ea</id>
-		  <name>Red Hat EA Repo</name>
-		  <url>https://maven.repository.redhat.com/earlyaccess/all/</url>
+			<id>redhat-ea</id>
+			<name>Red Hat EA Repo</name>
+			<url>https://maven.repository.redhat.com/earlyaccess/all/</url>
 		</repository>
-	  </repositories>
+	</repositories>
 
 	<profiles>
 		<!-- Infinispan Embedded -->
@@ -71,14 +72,26 @@
 			<properties>
 				<deployment.mode>host</deployment.mode>
 			</properties>
+			<dependencies>
+				<dependency>
+					<groupId>org.hsqldb</groupId>
+					<artifactId>hsqldb</artifactId>
+					<version>2.6.0</version>
+				</dependency>
+			</dependencies>
 		</profile>
 
 		<!-- Deployment on k8s -->
 		<profile>
 			<id>kubernetes</id>
 			<properties>
-				<springcloud.kubernetes.version>2.0.0</springcloud.kubernetes.version>
-				<ingress.domain>minikube.cloud</ingress.domain>
+				<springcloud.kubernetes.version>2.0.3</springcloud.kubernetes.version>
+				<jkube.domain>minikube.cloud</jkube.domain>
+				<jkube.createExternalUrls>true</jkube.createExternalUrls>
+				<!-- Pre k8s 1.16 -->
+				<!--jkube.enricher.jkube-ingress.targetApiVersion>extensions/v1beta1</jkube.enricher.jkube-ingress.targetApiVersion-->
+				<!-- After k8s 1.16 -->
+				<jkube.enricher.jkube-ingress.targetApiVersion>networking.k8s.io/v1</jkube.enricher.jkube-ingress.targetApiVersion>
 				<deployment.mode>kubernetes</deployment.mode>
 			</properties>
 			<dependencies>
@@ -88,17 +101,25 @@
 					<artifactId>spring-cloud-starter-kubernetes-fabric8-config</artifactId>
 					<version>${springcloud.kubernetes.version}</version>
 				</dependency>
+
+				<!-- JDBC Driver -->
+				<dependency>
+					<groupId>org.postgresql</groupId>
+					<artifactId>postgresql</artifactId>
+					<version>42.2.23</version>
+				</dependency>
+
 			</dependencies>
 			<build>
 				<plugins>
 					<plugin>
 						<groupId>org.eclipse.jkube</groupId>
 						<artifactId>kubernetes-maven-plugin</artifactId>
-						<version>1.0.2</version>
+						<version>1.4.0</version>
 						<configuration>
 							<images>
 								<image>
-									<name>quay.io/rgordill/%a:%l</name>
+									<name>quay.io/rgordill/%a:remote</name>
 									<!--registry>quay.io</registry-->
 									<build>
 										<from>quay.io/jkube/jkube-java-binary-s2i:0.0.9</from>
@@ -109,6 +130,14 @@
 								</image>
 							</images>
 							<resources>
+								<annotations>
+									<ingress>
+										<property>
+											<name>kubernetes.io/ingress.class</name>
+											<value>nginx</value>
+										</property>
+									</ingress>
+								</annotations>
 								<replicas>2</replicas>
 								<serviceAccount>${project.artifactId}</serviceAccount>
 								<volumes>
@@ -132,6 +161,7 @@
 												<targetPort>8080</targetPort>
 											</port>
 										</ports>
+										<expose>true</expose>
 									</service>
 									<service>
 										<name>${project.artifactId}-ping</name>
@@ -146,6 +176,21 @@
 										</ports>
 									</service>
 								</services>
+								<ingress>
+									<ingressRules>
+										<ingressRule>
+											<host>customer-service-cache.${jkube.domain}</host>
+											<paths>
+												<path>
+													<pathType>Prefix</pathType>
+													<path>/</path>
+													<serviceName>${project.artifactId}</serviceName>
+													<servicePort>8080</servicePort>
+												</path>
+											</paths>
+										</ingressRule>
+									</ingressRules>
+								</ingress>
 								<configMap>
 									<name>${project.artifactId}-config</name>
 									<entries>
@@ -175,7 +220,6 @@
 				</plugins>
 			</build>
 		</profile>
-
 	</profiles>
 
 	<dependencyManagement>
@@ -215,6 +259,23 @@
 			<groupId>org.infinispan.protostream</groupId>
 			<artifactId>protostream-processor</artifactId>
 		</dependency>
+
+		<!-- cache stores -->
+		<!--dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-cachestore-rocksdb</artifactId>
+		</dependency-->
+		<!--dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-cachestore-jdbc</artifactId>
+		</dependency-->
+
+		<!-- spring data jpa-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
 
 		<!-- Lombok -->
 		<dependency>

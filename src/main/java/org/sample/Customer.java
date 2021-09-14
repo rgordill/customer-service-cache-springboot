@@ -1,5 +1,10 @@
 package org.sample;
 
+import java.io.Serializable;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -18,10 +23,12 @@ import org.infinispan.protostream.annotations.ProtoField;
 @ToString
 @Schema(title = "Customer")
 @JsonPropertyOrder({"id","first-name","last-name","email"})
-public class Customer {
+@Entity
+public class Customer implements Serializable {
 
 	@Schema(title="UUID of a customer", readOnly=true )
 	@JsonProperty("id")
+	@Id
 	private String id;
 	
 	@Schema(title="First Name" )
