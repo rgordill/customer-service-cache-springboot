@@ -7,4 +7,5 @@
     </root>
     <!--logger name="org.springframework.web" level="DEBUG"/-->
     <!--logger name="org.infinispan" level="DEBUG"/-->
+    <logger name="org.springframework.vault" level="DEBUG"/>
 </configuration>

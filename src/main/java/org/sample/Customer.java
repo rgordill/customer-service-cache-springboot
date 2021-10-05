@@ -2,28 +2,34 @@ package org.sample;
 
 import java.io.Serializable;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+//import javax.persistence.Entity;
+//import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 import org.infinispan.protostream.annotations.ProtoFactory;
 import org.infinispan.protostream.annotations.ProtoField;
 
-@Setter @NoArgsConstructor
+import org.springframework.data.annotation.Id;
+import org.springframework.data.couchbase.core.mapping.Document;
+import org.springframework.data.couchbase.core.mapping.Field;
+
+@Data 
+@NoArgsConstructor
 @EqualsAndHashCode
 @ToString
 @Schema(title = "Customer")
 @JsonPropertyOrder({"id","first-name","last-name","email"})
-@Entity
+//@Entity
+@Document
 public class Customer implements Serializable {
 
 	@Schema(title="UUID of a customer", readOnly=true )
@@ -33,15 +39,21 @@ public class Customer implements Serializable {
 	
 	@Schema(title="First Name" )
 	@JsonProperty("first-name")
+//    @Column
+	@Field
 	private String firstName;
 	
 	@Schema(title="Last Name" )
 	@JsonProperty("last-name")
-    private String lastName;
+//    @Column
+	@Field
+	private String lastName;
 	
 	@Schema(title="Email" )
 	@JsonProperty("email")
-    private String email;
+//    @Column
+	@Field
+	private String email;
 
 	@ProtoFactory
 	public Customer(String id, String firstName, String lastName, String email) {
