@@ -2,10 +2,16 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+    <!--include resource="org/springframework/boot/logging/logback/file-appender.xml" /-->
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
+        <!--appender-ref ref="FILE"/-->
     </root>
     <!--logger name="org.springframework.web" level="DEBUG"/-->
     <!--logger name="org.infinispan" level="DEBUG"/-->
-    <logger name="org.springframework.vault" level="DEBUG"/>
+    <!--logger name="org.jgroups" level="DEBUG"/-->
+    <!--logger name="org.springframework.vault" level="DEBUG"/-->
+
+    <!--logger name="io.opentelemetry" level="DEBUG"/-->
+
 </configuration>

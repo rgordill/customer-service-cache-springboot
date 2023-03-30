@@ -1,6 +1,7 @@
 <infinispan>
   <cache-container statistics="true">
     <jmx enabled="true" />
+    <transport stack="tcp" />
     <serialization marshaller="org.infinispan.commons.marshall.JavaSerializationMarshaller">
       <allow-list>
         <regex>.*</regex>

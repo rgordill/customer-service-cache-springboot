@@ -3,6 +3,7 @@ package org.sample;
 import java.util.Optional;
 import java.util.UUID;
 
+// import jakarta.annotation.PostConstruct;
 import javax.annotation.PostConstruct;
 
 import org.infinispan.protostream.GeneratedSchema;
@@ -33,13 +34,15 @@ public class CustomerController {
     private CacheManager cacheManager;
 
     @PostConstruct
-    public void init() {
-        Cache protobufMetadata = cacheManager.getCache(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME);
+    public void init() throws Exception {
+        Cache protobufMetadata = cacheManager.getCache(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME);            
 
         GeneratedSchema schema = new CustomerSchemaBuilderImpl();
 
         // Define the new schema on the server too
-      protobufMetadata.put(schema.getProtoFileName(), schema.getProtoFile());
+        if (protobufMetadata != null){
+            protobufMetadata.put(schema.getProtoFileName(), schema.getProtoFile());
+        }
     }
 	
     @RequestMapping(method=RequestMethod.GET,value="/customer/{id}")
