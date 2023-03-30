@@ -83,7 +83,8 @@ public class CustomerController {
     @Operation(summary = "Update a Customer", description = "Update a Customer by id")
     public Customer updateCustomer(@PathVariable(value = "id") String id,
             @Parameter(description = "Customer object", required = true, name = "Customer") @RequestBody Customer c) {
- 
+                
+        c.setId(id);
         Customer c_update = repository.save(c);
 
         return c_update;

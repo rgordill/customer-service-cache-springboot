@@ -16,10 +16,10 @@ import org.springframework.stereotype.Repository;
 @CacheConfig(cacheNames="customers")
 public interface CustomerRepositorySpringCache extends CrudRepository<Customer,String>{
 
-    @Cacheable(unless="#result == null")
+    @Cacheable
     public Optional<Customer> findById(String id);
 
-    @Cacheable(key="#p0.id")
+    @CacheEvict
     public <S extends Customer> S save(S customer);
 
     @CacheEvict
