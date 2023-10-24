@@ -2,10 +2,10 @@ package org.sample;
 
 import java.io.Serializable;
 
-// import jakarta.persistence.Entity;
-// import jakarta.persistence.Id;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+// import javax.persistence.Entity;
+// import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

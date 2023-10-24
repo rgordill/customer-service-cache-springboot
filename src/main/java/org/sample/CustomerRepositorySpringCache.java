@@ -19,7 +19,7 @@ public interface CustomerRepositorySpringCache extends CrudRepository<Customer,S
     @Cacheable
     public Optional<Customer> findById(String id);
 
-    @CacheEvict
+    @CacheEvict(key="#p0.id")
     public <S extends Customer> S save(S customer);
 
     @CacheEvict

@@ -3,8 +3,11 @@ package org.sample;
 import java.util.Optional;
 import java.util.UUID;
 
-// import jakarta.annotation.PostConstruct;
-import javax.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import jakarta.annotation.PostConstruct;
+// import javax.annotation.PostConstruct;
 
 import org.infinispan.protostream.GeneratedSchema;
 import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
@@ -26,6 +29,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 
 @RestController
 public class CustomerController {
+
+	static Logger logger = LoggerFactory.getLogger(CustomerController.class);
 
     @Autowired
     private CustomerRepositorySpringCache repository;

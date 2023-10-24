@@ -32,9 +32,9 @@ mvn clean compile jar:jar spring-boot:repackage spring-boot:run -Premote,host
 
 ### Remote in kubernetes
 
-mvn clean compile jar:jar spring-boot:repackage k8s:build k8s:push k8s:resource k8s:deploy -Premote,kubernetes
+mvn clean compile jar:jar spring-boot:repackage k8s:build k8s:push k8s:resource k8s:deploy -Premote,kubernetes -Djkube.build.strategy=jib
 
-mvn k8s:undeploy -Pkubernetes,embedded
+mvn k8s:resource k8s:undeploy -Pkubernetes,embedded
 
 ## Remote + Protostream
 

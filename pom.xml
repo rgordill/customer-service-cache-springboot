@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://ww.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.redhat</groupId>
@@ -13,14 +15,14 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>17</java.version>
-		<springboot.version>2.7.10</springboot.version>
-		<springcloud.version>2021.0.1</springcloud.version>
+		<springboot.version>3.1.5</springboot.version>
+		<springcloud.version>2022.0.4</springcloud.version>
 		<!--springcloud.vault.version>3.0.4</springcloud.vault.version-->
 		<!--datasource-proxy.version>1.7</datasource-proxy.version-->
-		<springdoc.version>1.6.15</springdoc.version>
-		<infinispan.version>14.0.6.Final-redhat-00001</infinispan.version>
-		<micrometer.version>1.10.5</micrometer.version>
-		<lombok.version>1.18.26</lombok.version>
+		<springdoc.version>2.2.0</springdoc.version>
+		<infinispan.version>14.0.19.Final</infinispan.version>
+		<micrometer.version>1.11.5</micrometer.version>
+		<lombok.version>1.18.30</lombok.version>
 	</properties>
 
 	<repositories>
@@ -34,10 +36,10 @@
 			<name>Red Hat EA Repo</name>
 			<url>https://maven.repository.redhat.com/earlyaccess/all/</url>
 		</repository>
-			<repository>
-				<id>spring-milestones</id>
-				<url>https://repo.spring.io/milestone</url>
-			</repository>
+		<repository>
+			<id>spring-milestones</id>
+			<url>https://repo.spring.io/milestone</url>
+		</repository>
 	</repositories>
 
 	<profiles>
@@ -48,7 +50,7 @@
 				<!-- Spring Cache Embedded Infinispan -->
 				<dependency>
 					<groupId>org.infinispan</groupId>
-					<artifactId>infinispan-spring-boot-starter-embedded</artifactId>
+					<artifactId>infinispan-spring-boot3-starter-embedded</artifactId>
 					<version>${infinispan.version}</version>
 				</dependency>
 			</dependencies>
@@ -63,7 +65,7 @@
 				<!-- Spring Cache Remote Infinispan -->
 				<dependency>
 					<groupId>org.infinispan</groupId>
-					<artifactId>infinispan-spring-boot-starter-remote</artifactId>
+					<artifactId>infinispan-spring-boot3-starter-remote</artifactId>
 					<version>${infinispan.version}</version>
 				</dependency>
 			</dependencies>
@@ -80,12 +82,12 @@
 			</properties>
 			<dependencies>
 				<!-- Developer tools, to be clean -->
-					<!-- dependency>
+				<!-- dependency>
 							<groupId>org.springframework.boot</groupId>
 							<artifactId>spring-boot-devtools</artifactId>
 							<optional>true</optional>
 					</dependency-->
-			
+
 				<!-- Spring Admin Client -->
 				<dependency>
 					<groupId>de.codecentric</groupId>
@@ -101,9 +103,30 @@
 				<dependency>
 					<groupId>org.hsqldb</groupId>
 					<artifactId>hsqldb</artifactId>
-					<version>2.7.1</version>
+					<version>2.7.2</version>
 				</dependency>
 			</dependencies>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<configuration>
+							<jvmArguments>
+								-Dcom.sun.management.jmxremote=true 
+								-Dcom.sun.management.jmxremote.port=1099
+								-Dcom.sun.management.jmxremote.authenticate=false
+								-Dcom.sun.management.jmxremote.ssl=false
+								-Dcom.sun.management.jmxremote.registry.ssl=false
+								-Dcom.sun.management.jmxremote.rmi.port=1098
+								-Djava.rmi.server.hostname=localhost
+							</jvmArguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+
 		</profile>
 
 		<!-- Deployment on k8s -->
@@ -134,20 +157,22 @@
 				</dependency>
 
 			</dependencies>
+
 			<build>
 				<plugins>
 					<plugin>
 						<groupId>org.eclipse.jkube</groupId>
 						<artifactId>kubernetes-maven-plugin</artifactId>
-						<version>1.11.0</version>
+						<version>1.14.0</version>
 						<configuration>
 							<images>
 								<image>
 									<!--name>quay.io/rgordill/%a:%t</name-->
-									<name>quay.io/rgordill/customer-service-cache-springboot:snapshot-220317-210041-0845</name>
+									<name>
+										quay.io/rgordill/customer-service-cache-springboot:snapshot-231023-170000</name>
 									<!--registry>quay.io</registry-->
 									<build>
-										<from>quay.io/jkube/jkube-java-binary-s2i:0.0.10</from>
+										<from>quay.io/rgordill/jkube-java:0.0.19-debug</from>
 										<assembly>
 											<targetDir>/deployments</targetDir>
 										</assembly>
@@ -164,7 +189,12 @@
 									</ingress>
 								</annotations-->
 								<replicas>1</replicas>
-								<serviceAccount>${project.artifactId}</serviceAccount>
+								<serviceAccounts>
+								  <serviceAccount>
+										<name>${project.artifactId}</name>
+										<deploymentRef>${project.artifactId}</deploymentRef>
+									</serviceAccount>
+							  </serviceAccounts>
 								<volumes>
 									<volume>
 										<name>config-volume</name>
@@ -197,6 +227,24 @@
 												<protocol>TCP</protocol>
 												<port>7800</port>
 												<targetPort>7800</targetPort>
+											</port>
+										</ports>
+									</service>
+									<service>
+										<name>${project.artifactId}-jmx</name>
+										<headless>true</headless>
+										<ports>
+											<port>
+												<name>jfr-jmx</name>
+												<protocol>TCP</protocol>
+												<port>1099</port>
+												<targetPort>1099</targetPort>
+											</port>
+											<port>
+												<name>jfr-mbean</name>
+												<protocol>TCP</protocol>
+												<port>1098</port>
+												<targetPort>1098</targetPort>
 											</port>
 										</ports>
 									</service>
@@ -239,8 +287,22 @@
 								<env>
 									<!-- disable jolokia -->
 									<AB_JOLOKIA_OFF>true</AB_JOLOKIA_OFF>
-									<JAVA_OPTIONS>-Djgroups.dns.query=${project.artifactId}-ping</JAVA_OPTIONS>
-									<JAVA_ARGS>--spring.profiles.active=${deployment.mode},${infinispan.mode} --spring.cloud.kubernetes.config.name=customer-service-cache-config --spring.cloud.kuberentes.config.paths=/opt/jboss/etc --spring.cloud.kubernetes.config.enableApi=false</JAVA_ARGS>
+									<JAVA_OPTIONS>
+										-Djgroups.dns.query=${project.artifactId}-ping 
+										-Dcom.sun.management.jmxremote=true 
+										-Dcom.sun.management.jmxremote.port=1099
+										-Dcom.sun.management.jmxremote.authenticate=false
+										-Dcom.sun.management.jmxremote.rmi.port=1098
+										-Dcom.sun.management.jmxremote.ssl=false
+										-Dcom.sun.management.jmxremote.registry.ssl=false		
+										-Djava.rmi.server.hostname=localhost		
+									</JAVA_OPTIONS>
+									<JAVA_ARGS>
+										--spring.profiles.active=${deployment.mode},${infinispan.mode}
+										--spring.cloud.kubernetes.config.name=customer-service-cache-config
+										--spring.cloud.kuberentes.config.paths=/opt/jboss/etc
+										--spring.cloud.kubernetes.config.enableApi=false
+									</JAVA_ARGS>
 								</env>
 							</resources>
 						</configuration>
@@ -252,6 +314,21 @@
 
 	<dependencyManagement>
 		<dependencies>
+
+			<!-- [CVE-2022-1471] -->
+			<dependency>
+				<groupId>org.yaml</groupId>
+				<artifactId>snakeyaml</artifactId>
+				<version>2.2</version>
+			</dependency>
+
+			<!-- [CVE-2023-33201] -->
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcprov-jdk18on</artifactId>
+				<version>1.76</version>
+			</dependency>
+
 			<!-- Lock Infinispan version, instead of the one included by springboot itself -->
 			<dependency>
 				<groupId>org.infinispan</groupId>
@@ -275,8 +352,8 @@
 				<version>${springcloud.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
-			  </dependency>
-	
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
@@ -302,12 +379,12 @@
 			<artifactId>spring-cloud-vault-config-databases</artifactId>
 		</dependency-->
 
-		<!--dependency>
+		<dependency>
 			<groupId>org.infinispan</groupId>
 			<artifactId>infinispan-core-jakarta</artifactId>
-		</dependency-->
+		</dependency>
 
-		 <!-- ProtoStream implementation and relatives -->
+		<!-- ProtoStream implementation and relatives -->
 		<dependency>
 			<groupId>org.infinispan</groupId>
 			<artifactId>infinispan-remote-query-client</artifactId>
@@ -350,7 +427,7 @@
 		<!-- OpenAPI -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-ui</artifactId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>${springdoc.version}</version>
 		</dependency>
 
@@ -367,19 +444,19 @@
 		</dependency>
 
 		<!-- OpenTelemetry -->
-		<!--dependency>
+		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-tracing</artifactId>
-		</dependency-->
-		<!--dependency>
+		</dependency>
+		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-tracing-bridge-otel</artifactId>
-		</dependency-->
+		</dependency>
 		<!--dependency>
 			<groupId>net.ttddyy</groupId>
 			<artifactId>datasource-proxy</artifactId>
 			<version>${datasource-proxy.version}</version>
-	</dependency-->	
+	</dependency-->
 	</dependencies>
 
 	<build>
@@ -391,6 +468,9 @@
 				<version>3.11.0</version>
 				<configuration>
 					<release>${java.version}</release>
+					<compilerArgs>
+						<arg>-parameters</arg>
+					</compilerArgs>
 				</configuration>
 			</plugin>
 
