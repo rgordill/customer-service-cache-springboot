@@ -204,6 +204,22 @@
 											<mount>/opt/jboss/etc</mount>
 										</mounts>
 									</volume>
+									<!--volume>
+										<name>secret-volume-jmx</name>
+										<type>secret</type>
+										<secretName>${project.artifactId}-jfr-jmx-secret</secretName>
+										<mounts>
+											<mount>/var/run/secrets/jmx</mount>
+										</mounts>
+									</volume>
+									<volume>
+										<name>secret-volume-mbean</name>
+										<type>secret</type>
+										<secretName>${project.artifactId}-jfr-mbean-secret</secretName>
+										<mounts>
+											<mount>/var/run/secrets/mbean</mount>
+										</mounts>
+									</volume-->
 								</volumes>
 								<services>
 									<service>
@@ -297,6 +313,9 @@
 										-Dcom.sun.management.jmxremote.registry.ssl=false		
 										-Djava.rmi.server.hostname=localhost		
 									</JAVA_OPTIONS>
+										<!-- -Dcom.sun.management.jmxremote.ssl=true
+										-Djavax.net.ssl.keyStore=/var/run/secrets/jmx/keystore.jks
+										-Djavax.net.ssl.keyStorePassword=changeme -->
 									<JAVA_ARGS>
 										--spring.profiles.active=${deployment.mode},${infinispan.mode}
 										--spring.cloud.kubernetes.config.name=customer-service-cache-config

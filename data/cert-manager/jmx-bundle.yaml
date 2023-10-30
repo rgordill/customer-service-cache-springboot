@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jks-password-secret
+type: Opaque
+stringData:
+  password-key: changeme
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: customer-service-cache-springboot-jmx-cert
+spec:
+  secretName: customer-service-cache-springboot-jmx-secret
+  isCA: false
+  dnsNames:
+  - "127.0.0.1"
+  - "localhost"
+  - customer-service-cache-springboot-jfr-jmx
+  - customer-service-cache-springboot-jfr-mbean
+  - customer-service-cache-springboot-jfr-jmx.my-namespace.svc
+  - customer-service-cache-springboot-jfr-mbean.my-namespace.svc
+  keystores:
+    jks:
+      create: true
+      passwordSecretRef: # Password used to encrypt the keystore
+        name: jks-password-secret
+        key: password-key
+  issuerRef:
+    name: my-ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
